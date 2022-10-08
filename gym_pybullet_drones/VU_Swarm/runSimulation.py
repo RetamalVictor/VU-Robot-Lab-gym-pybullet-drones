@@ -11,8 +11,8 @@
 
 
 import numpy as np
-from gym_pybullet_drones.VU_Swarm.envs.VectorForceAviary import VectorForceAviary 
-from gym_pybullet_drones.VU_Swarm.envs.RLTestBedAviary import RLTestBedAviary 
+from gym_pybullet_drones.VU_Swarm.envs.VectorForceAviary import VectorForceAviary
+from gym_pybullet_drones.VU_Swarm.envs.RLTestBedAviary import RLTestBedAviary
 from gym_pybullet_drones.VU_Swarm.controllers.flockControl import Flock
 from gym_pybullet_drones.VU_Swarm.controllers.neuralControl import NeuralControl
 from gym_pybullet_drones.VU_Swarm.models.DDPG.ddpg_agent import Agent
@@ -34,12 +34,11 @@ DEFAULT_AGGREGATE = True
 DEFAULT_SIMULATION_FREQ_HZ = 120
 DEFAULT_CONTROL_FREQ_HZ = 48
 DEFAULT_DURATION_SEC = 50
-DEFAULT_OUTPUT_FOLDER = (
-    r"\results"
-)
+DEFAULT_OUTPUT_FOLDER = r"\results"
 DEFAULT_COLAB = False
-DEFAULT_MODE = "Flocking" # "NeuralControl" or "Flocking"
- 
+DEFAULT_MODE = "Flocking"  # "NeuralControl" or "Flocking"
+
+
 def run(
     drone=DEFAULT_DRONE,
     num_drones=DEFAULT_DRONE_NUMBER,
@@ -52,7 +51,7 @@ def run(
     duration_sec=DEFAULT_DURATION_SEC,
     output_folder=DEFAULT_OUTPUT_FOLDER,
     colab=DEFAULT_COLAB,
-    mode=DEFAULT_MODE
+    mode=DEFAULT_MODE,
 ):
 
     assert mode in ["NeuralControl", "Flocking"]
@@ -92,8 +91,16 @@ def run(
     args["beta"] = 5
     args["debug"] = False
     #### Create the environment ################################
-
-    if mode == "NeuralControl": 
+    """
+    For the environment, you can change the physic engine. The options are:
+    PYB = "pyb"                         # Base PyBullet physics update
+    DYN = "dyn"                         # Update with an explicit model of the dynamics
+    PYB_GND = "pyb_gnd"                 # PyBullet physics update with ground effect
+    PYB_DRAG = "pyb_drag"               # PyBullet physics update with drag
+    PYB_DW = "pyb_dw"                   # PyBullet physics update with downwash
+    PYB_GND_DRAG_DW = "pyb_gnd_drag_dw" # PyBullet physics update with ground effect, drag, and downwash
+    """
+    if mode == "NeuralControl":
 
         env = RLTestBedAviary(
             drone_model=drone,
@@ -130,7 +137,6 @@ def run(
             controller.plot()
         controller.close()
 
-
     elif mode == "Flocking":
 
         env = VectorForceAviary(
@@ -146,8 +152,8 @@ def run(
             record=record_video,
             obs=ObservationType.KIN,
             act=ActionType.VEL,
-            )
-    #### Initialize the flock #################################
+        )
+        #### Initialize the flock #################################
         flocking = Flock(env, args, logger)
 
         flocking.init()
@@ -157,6 +163,7 @@ def run(
         if plot:
             flocking.plot()
         flocking.close()
+
 
 if __name__ == "__main__":
 

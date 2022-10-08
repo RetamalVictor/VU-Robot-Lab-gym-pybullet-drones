@@ -1,11 +1,14 @@
-
 import numpy as np
 
 import torch as T
 import torch.nn.functional as F
 
 from gym_pybullet_drones.VU_Swarm.models.DDPG.utils import ReplayBuffer, OUActionNoise
-from gym_pybullet_drones.VU_Swarm.models.DDPG.DDPG_network import ActorNetwork, CriticNetwork
+from gym_pybullet_drones.VU_Swarm.models.DDPG.DDPG_network import (
+    ActorNetwork,
+    CriticNetwork,
+)
+
 
 class Agent(object):
     def __init__(

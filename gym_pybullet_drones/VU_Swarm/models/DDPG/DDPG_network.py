@@ -2,12 +2,10 @@ import os
 import numpy as np
 
 
-
 import torch as T
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-
 
 
 class CriticNetwork(nn.Module):
@@ -132,4 +130,3 @@ class ActorNetwork(nn.Module):
     def load_checkpoint(self):
         print("... loading checkpoint ...")
         self.load_state_dict(T.load(self.checkpoint_file))
-

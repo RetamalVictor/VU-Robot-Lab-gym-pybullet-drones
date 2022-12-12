@@ -10,7 +10,7 @@ from gym_pybullet_drones.VU_Swarm.models.DDPG.DDPG_network import (
 )
 
 
-class Agent(object):
+class AgentHeading(object):
     def __init__(
         self,
         alpha,
@@ -18,18 +18,21 @@ class Agent(object):
         input_dims,
         tau,
         checkpoint_dir,
+        dt=0.005,
         gamma=0.99,
         n_actions=2,
         max_size=1000000,
         layer1_size=400,
         layer2_size=300,
         batch_size=64,
+        wmax=1.5708 * 2,
     ):
+        self.wmax = wmax
         self.gamma = gamma
         self.tau = tau
         self.memory = ReplayBuffer(max_size, input_dims, n_actions)
         self.batch_size = batch_size
-
+        self.control_frq = dt
         self.actor = ActorNetwork(
             alpha,
             input_dims,
@@ -72,17 +75,38 @@ class Agent(object):
 
         self.update_network_parameters(tau=1)
 
+    @staticmethod
+    def wraptopi(x):
+        x = x % (np.pi * 2)
+        x = (x + (np.pi * 2)) % (np.pi * 2)
+        x[x > np.pi] = x[x > np.pi] - (np.pi * 2)
+        return x
+
+    def getHeading(self):
+        return self.heading
+
+    def initHeading(self):
+        self.heading = np.random.uniform(0, np.pi)
+
     def choose_action(self, observation):
         """
         Observation: Matrix (num_Drones + 3,)
+        In this class, the agent will output U and W, being linear and angular velocity.
+        These U, W are translated to vx,vy DeltaHeading.
         """
         self.actor.eval()
         with T.no_grad():
             observation = T.tensor(observation, dtype=T.float).to(self.actor.device)
             mu = self.actor.forward(observation).to(self.actor.device)
             mu_prime = mu + T.tensor(self.noise(), dtype=T.float).to(self.actor.device)
+            mu_prime = mu_prime.cpu().detach().numpy()
+        mu_prime[1] = np.clip(mu_prime[1], -self.wmax, self.wmax)
+        mu_prime[0] = np.clip(mu_prime[0], 0.0005, np.inf)
+        vx = mu_prime[0] * np.cos(self.heading) * self.control_frq
+        vy = mu_prime[0] * np.sin(self.heading) * self.control_frq
+        self.heading = self.heading + (mu_prime[1] * 0.005)
         self.actor.train()
-        return mu_prime.cpu().detach().numpy()
+        return np.array([vx, vy])
 
     def remember(self, state, action, reward, new_state, done):
         self.memory.store_transition(state, action, reward, new_state, done)

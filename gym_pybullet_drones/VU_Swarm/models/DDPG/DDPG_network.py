@@ -17,16 +17,16 @@ class CriticNetwork(nn.Module):
         fc2_dims,
         n_actions,
         name,
-        chkpt_dir="tmp\\ddpg",
+        chkpt_dir=r"C:\Users\victo\Desktop\VU master\drones\Drones_RL\gym-pybullet-drones\gym_pybullet_drones\VU_Swarm\models\saved_models\test_with_heading",
     ):
         super(CriticNetwork, self).__init__()
         self.input_dims = input_dims
         self.fc1_dims = fc1_dims
         self.fc2_dims = fc2_dims
         self.n_actions = n_actions
-        self.checkpoint_file = os.path.join(chkpt_dir, name + "_ddpg")
-        if not os.path.exists(self.checkpoint_file):
-            os.makedirs(self.checkpoint_file)
+        if not os.path.exists(chkpt_dir):
+            os.makedirs(chkpt_dir)
+        self.checkpoint_file = os.path.join(chkpt_dir, name + "_ddpg.pt")
         self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims)
         f1 = 1.0 / np.sqrt(self.fc1.weight.data.size()[0])
         T.nn.init.uniform_(self.fc1.weight.data, -f1, f1)
@@ -81,14 +81,14 @@ class ActorNetwork(nn.Module):
         fc2_dims,
         n_actions,
         name,
-        chkpt_dir="tmp/ddpg",
+        chkpt_dir=r"C:\Users\victo\Desktop\VU master\drones\Drones_RL\gym-pybullet-drones\gym_pybullet_drones\VU_Swarm\models\saved_models\test_with_heading",
     ):
         super(ActorNetwork, self).__init__()
         self.input_dims = input_dims
         self.fc1_dims = fc1_dims
         self.fc2_dims = fc2_dims
         self.n_actions = n_actions
-        self.checkpoint_file = os.path.join(chkpt_dir, name + "_ddpg")
+        self.checkpoint_file = os.path.join(chkpt_dir, name + "_ddpg.pt")
         self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims)
         f1 = 1.0 / np.sqrt(self.fc1.weight.data.size()[0])
         T.nn.init.uniform_(self.fc1.weight.data, -f1, f1)
@@ -113,6 +113,7 @@ class ActorNetwork(nn.Module):
         self.to(self.device)
 
     def forward(self, state):
+        # state = T.flatten(state)
         x = self.fc1(state)
         x = self.bn1(x)
         x = F.relu(x)
